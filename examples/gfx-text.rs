@@ -3,8 +3,8 @@
 
 extern crate alloc;
 
-use log::info;
 use uefi::prelude::*;
+
 use uefapi::prelude::*;
 
 const FONT_DATA: &[u8] = include_bytes!("../../baked-font-generator/font.bin");
