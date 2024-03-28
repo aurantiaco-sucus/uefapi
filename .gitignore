@@ -1,0 +1,5 @@
+/target
+/.idea
+*.fd
+examples/some_long_text.txt
+Cargo.lock

@@ -1,0 +1,14 @@
+[package]
+name = "uefapi"
+version = "0.1.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+uefi = "0.27.0"
+uefi-services = "0.24.0"
+baked-font = { path = "../baked-font" }
+ruzstd = { version = "0.6.0", default-features = false}
+log = "0.4.21"
+postcard = "1.0.8"
