@@ -5,12 +5,10 @@ extern crate alloc;
 
 use log::info;
 use uefi::prelude::*;
-use uefapi::gfx::FontExt;
-
+use uefi::table::boot::SearchType;
 use uefapi::prelude::*;
 
 const FONT_DATA: &[u8] = include_bytes!("../../baked-font-generator/font.bin");
-const SOME_LONG_TEXT: &str = include_str!("some_long_text.txt");
 
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
@@ -22,12 +20,13 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     let font: baked_font::Font = postcard::from_bytes(FONT_DATA).unwrap();
     let mut screen = gfx::Buffer::new_screen();
-
-    info!("Height: {}", font.wrapped_height(SOME_LONG_TEXT, 780, 18));
-    screen.render_text_wrapped(
-        10, 10, 780, 18, SOME_LONG_TEXT, &font, gfx::Color::WHITE);
-    screen.present();
     
+    let buffer = system_table.boot_services()
+        .locate_handle_buffer(SearchType::AllHandles).unwrap();
+    info!("Handle count: {}", buffer.len());
+    
+    screen.present();
+
     system_table.boot_services().stall(30_000_000);
     Status::SUCCESS
 }

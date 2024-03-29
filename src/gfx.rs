@@ -2,6 +2,7 @@ use alloc::{slice, vec};
 use alloc::vec::Vec;
 
 use baked_font::{Font, Glyph};
+use log::{info, warn};
 use uefi::proto::console::gop::{BltOp, BltPixel, BltRegion, GraphicsOutput, Mode};
 
 static mut SCREEN_RESOLUTION: (usize, usize) = (0, 0);
@@ -116,51 +117,139 @@ impl Color {
     pub const WHITE: Self = Self::rgb(255, 255, 255);
 }
 
+pub struct GlyphStraightIterator<'a, 'b> {
+    font: &'a Font,
+    chars: &'b [char],
+    pos: usize,
+    offset: i32,
+}
+
+impl<'a, 'b> GlyphStraightIterator<'a, 'b> {
+    fn from_font_chars(font: &'a Font, chars: &'b [char]) -> Self {
+        Self { font, chars, pos: 0, offset: 0 }
+    }
+}
+
+impl<'a, 'b> Iterator for GlyphStraightIterator<'a, 'b> {
+    type Item = (Glyph, i32);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pos >= self.chars.len() {
+            return None;
+        }
+        let val = self.font.lookup(&self.chars, self.pos)
+            .map(|(glyph, is_pair)| {
+                self.pos += if is_pair { 2 } else { 1 };
+                let x_offset = self.offset;
+                self.offset += glyph.size.0 as i32;
+                (glyph, x_offset)
+            });
+        if val.is_none() {
+            warn!("Glyph not found: {}", self.chars[self.pos]);
+            self.pos += 1;
+            return self.next();
+        }
+        val
+    }
+}
+
+pub struct GlyphWrappedIterator<'a, 'b> {
+    font: &'a Font,
+    chars: &'b [char],
+    pos: usize,
+    offset: i32,
+    line_width: i32,
+    line_height: i32,
+    y_offset: i32,
+}
+
+impl<'a, 'b> Iterator for GlyphWrappedIterator<'a, 'b> {
+    type Item = (Glyph, i32, i32);
+    
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pos >= self.chars.len() {
+            return None;
+        }
+        if self.chars[self.pos] == '\n' {
+            self.pos += 1;
+            self.offset = 0;
+            self.y_offset += self.line_height;
+            return self.next();
+        }
+        let val = self.font.lookup(&self.chars, self.pos)
+            .map(|(glyph, is_pair)| {
+                self.pos += if is_pair { 2 } else { 1 };
+                if self.offset + glyph.size.0 as i32 > self.line_width {
+                    self.offset = 0;
+                    self.y_offset += self.line_height;
+                }
+                let x_offset = self.offset;
+                self.offset += glyph.size.0 as i32;
+                (glyph, x_offset, self.y_offset)
+            });
+        if val.is_none() {
+            warn!("Glyph not found: {}", self.chars[self.pos]);
+            self.pos += 1;
+            return self.next();
+        }
+        val
+    }
+}
+
+pub trait FontExt {
+    fn straight_iter<'a, 'b>(&'a self, chars: &'b [char]) -> GlyphStraightIterator<'a, 'b>;
+    fn wrapped_iter<'a, 'b>(
+        &'a self, chars: &'b [char], line_width: i32, line_height: i32
+    ) -> GlyphWrappedIterator<'a, 'b>;
+    fn wrapped_height(&self, string: &str, line_width: i32, line_height: i32) -> i32;
+}
+
+impl FontExt for Font {
+    fn straight_iter<'a, 'b>(&'a self, chars: &'b [char]) -> GlyphStraightIterator<'a, 'b> {
+        GlyphStraightIterator::from_font_chars(self, chars)
+    }
+    
+    fn wrapped_iter<'a, 'b>(
+        &'a self, chars: &'b [char], line_width: i32, line_height: i32
+    ) -> GlyphWrappedIterator<'a, 'b> {
+        GlyphWrappedIterator {
+            font: self, chars, pos: 0, offset: 0,
+            line_width, line_height, y_offset: 0,
+        }
+    }
+
+    fn wrapped_height(&self, string: &str, line_width: i32, line_height: i32) -> i32 {
+        let chars = string.chars().collect::<Vec<_>>();
+        self.wrapped_iter(&chars, line_width, line_height)
+            .map(|(_, _, y_off)| y_off)
+            .last().unwrap() + line_height
+    }
+}
+
 #[inline]
 const fn apply_alpha_on_u8(src: u8, alpha: u8) -> u8 {
     ((src as u16) * (alpha as u16) / 255) as u8
 }
 
 impl Buffer {
-    pub fn render_text(&mut self, x: i32, y: i32, text: &str, font: &Font, color: Color) {
-        let mut off = 0;
-        let mut pos = 0;
+    pub fn render_text_straight(
+        &mut self, x: i32, y: i32, 
+        text: &str, font: &Font, color: Color
+    ) {
         let chars = text.chars().collect::<Vec<_>>();
-        while pos < chars.len() {
-            if let Some((glyph, is_pair)) = font.lookup(&chars, pos) {
-                self.render_glyph(x + off, y, font, glyph, color);
-                off += glyph.size.0 as i32;
-                pos += if is_pair { 2 } else { 1 };
-            } else {
-                pos += 1;
-            }
+        for (glyph, x_off) in font.straight_iter(&chars) {
+            self.render_glyph(x + x_off, y, font, glyph, color);
         }
     }
     
-    pub fn render_text_multiline(
-        &mut self, x: i32, y: i32, width: i32, line_height: i32, 
+    pub fn render_text_wrapped(
+        &mut self, x: i32, y: i32, line_width: i32, line_height: i32,
         text: &str, font: &Font, color: Color
     ) {
-        let mut x_off = 0;
-        let mut y_off = 0;
-        let mut pos = 0;
         let chars = text.chars().collect::<Vec<_>>();
-        while pos < chars.len() {
-            if let Some((glyph, is_pair)) = font.lookup(&chars, pos) {
-                if x_off + glyph.size.0 as i32 > width {
-                    x_off = 0;
-                    y_off += line_height;
-                }
-                self.render_glyph(x + x_off, y + y_off, font, glyph, color);
-                x_off += glyph.size.0 as i32;
-                pos += if is_pair { 2 } else { 1 };
-            } else {
-                if chars[pos] == '\n' {
-                    x_off = 0;
-                    y_off += line_height;
-                }
-                pos += 1;
-            }
+        let iter = font.wrapped_iter(&chars, line_width, line_height);
+        for (glyph, x_off, y_off) in iter {
+            self.render_glyph(x + x_off, y + y_off, font, glyph, color);
         }
     }
 
