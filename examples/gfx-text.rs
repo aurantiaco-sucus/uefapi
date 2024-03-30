@@ -24,8 +24,8 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     let mut screen = gfx::Buffer::new_screen();
 
     info!("Height: {}", font.wrapped_height(SOME_LONG_TEXT, 780, 18));
-    screen.render_text_wrapped(
-        10, 10, 780, 18, SOME_LONG_TEXT, &font, gfx::Color::WHITE);
+    screen.render_text_wrapped(SOME_LONG_TEXT,
+                               10, 10, 780, 18, &font, gfx::Color::WHITE);
     screen.present();
     
     system_table.boot_services().stall(30_000_000);

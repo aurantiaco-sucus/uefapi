@@ -5,6 +5,8 @@ extern crate alloc;
 
 use log::info;
 use uefi::prelude::*;
+use uefi::proto::device_path::text::DevicePathToText;
+use uefi::proto::media::disk::DiskIo;
 use uefi::table::boot::SearchType;
 use uefapi::prelude::*;
 
@@ -20,10 +22,9 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     let font: baked_font::Font = postcard::from_bytes(FONT_DATA).unwrap();
     let mut screen = gfx::Buffer::new_screen();
-    
+
     let buffer = system_table.boot_services()
-        .locate_handle_buffer(SearchType::AllHandles).unwrap();
-    info!("Handle count: {}", buffer.len());
+        .locate_handle_buffer(SearchType::from_proto::<DiskIo>()).unwrap();
     
     screen.present();
 
