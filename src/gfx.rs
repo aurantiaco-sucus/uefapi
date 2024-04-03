@@ -67,7 +67,7 @@ impl Buffer {
         x >= 0 && y >= 0 && x < self.width as i32 && y < self.data.len() as i32 / self.width as i32
     }
     
-    pub const fn height(&self) -> usize {
+    pub fn height(&self) -> usize {
         self.data.len() / self.width
     }
 }
@@ -353,49 +353,6 @@ impl ProgressBar {
     }
 }
 
-pub struct ScrollingScreen {
-    pub x: i32,
-    pub y: i32,
-    pub width: i32,
-    pub height: i32,
-    pub buf: Buffer,
-    pub pos: i32,
-}
-
-impl Buffer {
-    pub fn into_scrolling_screen(self) -> ScrollingScreen {
-        ScrollingScreen {
-            x: 0,
-            y: 0,
-            width: self.width as i32,
-            height: (self.data.len() / self.width) as i32,
-            buf: self,
-            pos: 0
-        }
-    }
-}
-
-impl ScrollingScreen {
-    pub fn render(&self, buffer: &mut Buffer) {
-        if self.x >= buffer.width as i32 || 
-            self.y >= buffer.height() as i32 || 
-            self.x + self.width <= 0 || 
-            self.y + self.height <= 0  { return; }
-        let clip_x_begin = if self.x < 0 { -self.x } else { 0 };
-        let clip_y_begin = if self.y < 0 { -self.y } else { 0 };
-        let clip_x_end = if self.x + self.width > buffer.width as i32 { buffer.width as i32 - self.x };
-        for dy in 0..self.height {
-            let src_y = self.pos + dy;
-            if src_y >= self.buf.height() as i32 { continue; }
-            let 
-        }
-    }
-    
-    pub fn present(&self, buffer: &Buffer) {
-        buffer.present();
-    }
-}
-
 impl Buffer {
     pub fn from_text(
         text: &str, line_width: i32, line_height: i32, font: &Font, color: Color
@@ -406,8 +363,4 @@ impl Buffer {
             text, line_width, line_height, 0, 0, font, color);
         buffer
     }
-}
-
-pub struct ScrollingScreenController {
-    
 }
