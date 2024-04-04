@@ -3,14 +3,15 @@
 
 extern crate alloc;
 
-use log::info;
 use uefi::prelude::*;
 use uefi::proto::media::disk::DiskIo;
 use uefi::table::boot::SearchType;
-use uefapi::gfx2::{screen, screen_rect};
+use uefi_services::println;
+use uefapi::gfx2::{Color, GlyphCoordIteratorExt, GlyphIteratorExt};
 use uefapi::prelude_dev::*;
 
 const FONT_DATA: &[u8] = include_bytes!("../../baked-font-generator/font.bin");
+const SOME_LONG_TEXT: &str = include_str!("some_long_text.txt");
 
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
@@ -24,6 +25,19 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     let buffer = system_table.boot_services()
         .locate_handle_buffer(SearchType::from_proto::<DiskIo>()).unwrap();
+    
+    gfx::Screen::get().clear(Color::RED);
+    gfx::Screen::present(gfx::Screen::rect());
+    
+    font.lookup_string(SOME_LONG_TEXT)
+        .zip(SOME_LONG_TEXT.chars())
+        .map(|(x, c)| {
+            println!("{c}");
+            x
+        })
+        .glyph_coords()
+        .line_wrap(780, 18)
+        .draw_each(gfx::Screen::get(), gfx::pos(10, 10), &font, gfx::Color::WHITE);
     
     gfx::Screen::present(gfx::Screen::rect());
 

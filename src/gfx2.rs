@@ -4,6 +4,7 @@ use alloc::vec::Vec;
 use core::ops::{Add, Sub};
 use core::slice;
 use baked_font::{Font, Glyph};
+use log::info;
 use uefi::proto::console::gop::{BltOp, BltPixel, BltRegion, GraphicsOutput, Mode};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default)]
@@ -335,18 +336,10 @@ impl Buffer {
         &self, other_bounds: Area, other_area: Area, pos: Pos
     ) -> Option<(Area, Pos)> {
         let other_area = other_area.intersection(other_bounds);
-        let other_area = if let Some(other_area) = other_area {
-            other_area
-        } else {
-            return None;
-        };
+        let other_area = other_area?;
         let dst_area = rect(pos, other_area.rect().dim).area()
             .intersection(self.area());
-        let dst_area = if let Some(dst_area) = dst_area {
-            dst_area
-        } else {
-            return None;
-        };
+        let dst_area = dst_area?;
         Some((other_area, dst_area.pos1))
     }
     
@@ -458,67 +451,64 @@ impl Screen {
     }
 }
 
-pub struct StraightGlyphIterator<'a, T: Iterator<Item=Glyph>> {
-    font: &'a Font,
+pub struct StraightGlyphCoordIterator<T: Iterator<Item=Glyph>> {
     iter: T,
     off: Pos,
 }
 
-impl<'a, T: Iterator<Item=Glyph>> StraightGlyphIterator<'a, T> {
-    pub fn new(font: &'a Font, iter: T) -> Self {
-        Self { font, iter, off: pos(0, 0) }
+impl<T: Iterator<Item=Glyph>> StraightGlyphCoordIterator<T> {
+    pub fn new(iter: T) -> Self {
+        Self { iter, off: pos(0, 0) }
     }
 }
 
-pub trait FontExt {
-    fn straight_glyphs<'a, T: Iterator<Item=Glyph>>(&'a self, iter: T)
-        -> StraightGlyphIterator<'a, T>;
+pub trait GlyphIteratorExt<T: Iterator<Item=Glyph>> {
+    fn glyph_coords(self) -> StraightGlyphCoordIterator<T>;
 }
 
-impl FontExt for Font {
-    fn straight_glyphs<T: Iterator<Item=Glyph>>(&self, iter: T) -> StraightGlyphIterator<T> {
-        StraightGlyphIterator::new(self, iter)
+impl<T: Iterator<Item=Glyph>> GlyphIteratorExt<T> for T {
+    fn glyph_coords(self) -> StraightGlyphCoordIterator<T> {
+        StraightGlyphCoordIterator::new(self)
     }
 }
 
-impl<'a, T: Iterator<Item=Glyph>> Iterator for StraightGlyphIterator<'a, T> {
-    type Item = (Glyph, Rect, Pos);
+impl<T: Iterator<Item=Glyph>> Iterator for StraightGlyphCoordIterator<T> {
+    type Item = (Pos, Pos, Dim);
     
     fn next(&mut self) -> Option<Self::Item> {
         let glyph = self.iter.next()?;
         let fg_pos = pos(glyph.pos.0 as i32, glyph.pos.1 as i32);
         let fg_dim = dim(glyph.size.0 as i32, glyph.size.0 as i32);
-        let fg_rect = rect(fg_pos, fg_dim);
-        let c_off = self.off;
+        let g_off = pos(glyph.offset.0 as i32, glyph.offset.1 as i32);
+        let c_off = self.off + g_off;
         self.off.x += fg_dim.w;
-        Some((glyph, fg_rect, c_off))
+        Some((fg_pos, c_off, fg_dim))
     }
 }
 
-pub struct LineWrapGlyphIterator<'a, T: Iterator<Item=Glyph>> {
-    iter: StraightGlyphIterator<'a, T>,
+pub struct LineWrapGlyphCoordIterator<T: Iterator<Item=Glyph>> {
+    iter: StraightGlyphCoordIterator<T>,
     width: i32,
     height: i32,
 }
 
-impl<'a, T: Iterator<Item=Glyph>> StraightGlyphIterator<'a, T> {
-    pub fn line_wrap(self, width: i32, height: i32) -> LineWrapGlyphIterator<'a, T> {
-        LineWrapGlyphIterator { iter: self, width, height }
+impl<T: Iterator<Item=Glyph>> StraightGlyphCoordIterator<T> {
+    pub fn line_wrap(self, width: i32, height: i32) -> LineWrapGlyphCoordIterator<T> {
+        LineWrapGlyphCoordIterator { iter: self, width, height }
     }
 }
 
-impl<'a, T: Iterator<Item=Glyph>> Iterator for LineWrapGlyphIterator<'a, T> {
-    type Item = (Glyph, Rect, Pos);
+impl<T: Iterator<Item=Glyph>> Iterator for LineWrapGlyphCoordIterator<T> {
+    type Item = (Pos, Pos, Dim);
     
     fn next(&mut self) -> Option<Self::Item> {
-        let (glyph, fg_rect, mut c_off) = self.iter.next()?;
-        let fg_dim = fg_rect.dim;
+        let (fg_pos, mut c_off, fg_dim) = self.iter.next()?;
         if c_off.x + fg_dim.w > self.width {
             self.iter.off.x = fg_dim.w;
             self.iter.off.y += self.height;
             c_off.x = 0;
         }
-        Some((glyph, fg_rect, c_off))
+        Some((fg_pos, c_off, fg_dim))
     }
 }
 
@@ -555,18 +545,39 @@ impl Iterator for AreaPosIter {
 
 impl Buffer {
     pub fn draw_glyph(&mut self, loc: Pos, font: &Font, glyph: Glyph, color: Color) {
-        let glyph_off = pos(glyph.pos.0 as i32, glyph.pos.1 as i32) - loc;
-        let glyph_dim = dim(glyph.size.0 as i32, glyph.size.1 as i32);
-        let area = self.area().intersection(rect(loc, glyph_dim).area());
+        let glyph_loc = pos(glyph.pos.0 as i32, glyph.pos.1 as i32) - loc;
+        let sz = dim(glyph.size.0 as i32, glyph.size.1 as i32);
+        self.draw_font_rect(loc, font, glyph_loc, sz, color);
+    }
+    
+    pub fn draw_font_rect(
+        &mut self, loc: Pos, font: &Font, glyph_loc: Pos, sz: Dim, color: Color
+    ) {
+        let glyph_loc = glyph_loc - loc;
+        let area = self.area().intersection(rect(loc, sz).area());
         let area = if let Some (x) = area { x } else { return; };
         for loc in area.pos_iter() {
-            let glyph_loc = glyph_off + loc;
+            let glyph_loc = glyph_loc + loc;
             let alpha = font.bitmap[
                 glyph_loc.x as usize + glyph_loc.y as usize * font.width as usize];
             let color = color.apply_alpha(alpha);
             let px = &mut self.data[
                 loc.x as usize + loc.y as usize * self.dim.w as usize];
             *px = px.premultiplied_over(color);
+        }
+    }
+}
+
+pub trait GlyphCoordIteratorExt {
+    fn draw_each(&mut self, buffer: &mut Buffer, loc: Pos, font: &Font, color: Color);
+}
+
+impl<T: Iterator<Item=(Pos, Pos, Dim)>> GlyphCoordIteratorExt for T {
+    fn draw_each(&mut self, buffer: &mut Buffer, loc: Pos, font: &Font, color: Color) {
+        for (fg_pos, c_off, fg_dim) in self {
+            let c_off = c_off + loc;
+            info!("{:?} {:?} {:?}", c_off, fg_pos, fg_dim);
+            buffer.draw_font_rect(c_off, font, fg_pos, fg_dim, color);
         }
     }
 }

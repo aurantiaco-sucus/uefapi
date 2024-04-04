@@ -1,0 +1,122 @@
+[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01HBdsDxe: loading Boot0001 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
+BdsDxe: starting Boot0001 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
+W
+[ INFO]:  src/gfx2.rs@579: Pos { x: 10, y: 14 } Pos { x: 1111, y: 1551 } Dim { w: 14, h: 14 }
+i
+[ INFO]:  src/gfx2.rs@579: Pos { x: 25, y: 13 } Pos { x: 734, y: 1551 } Dim { w: 4, h: 4 }
+l
+[ INFO]:  src/gfx2.rs@579: Pos { x: 29, y: 13 } Pos { x: 751, y: 1551 } Dim { w: 5, h: 5 }
+l
+[ INFO]:  src/gfx2.rs@579: Pos { x: 34, y: 13 } Pos { x: 751, y: 1551 } Dim { w: 5, h: 5 }
+i
+[ INFO]:  src/gfx2.rs@579: Pos { x: 39, y: 13 } Pos { x: 734, y: 1551 } Dim { w: 4, h: 4 }
+a
+[ INFO]:  src/gfx2.rs@579: Pos { x: 42, y: 17 } Pos { x: 664, y: 1551 } Dim { w: 9, h: 9 }
+m
+[ INFO]:  src/gfx2.rs@579: Pos { x: 52, y: 17 } Pos { x: 756, y: 1551 } Dim { w: 15, h: 15 }
+ 
+[ INFO]:  src/gfx2.rs@579: Pos { x: 66, y: 26 } Pos { x: 1153, y: 1551 } Dim { w: 4, h: 4 }
+S
+[ INFO]:  src/gfx2.rs@579: Pos { x: 70, y: 14 } Pos { x: 1070, y: 1551 } Dim { w: 10, h: 10 }
+h
+[ INFO]:  src/gfx2.rs@579: Pos { x: 81, y: 13 } Pos { x: 724, y: 1551 } Dim { w: 10, h: 10 }
+a
+[ INFO]:  src/gfx2.rs@579: Pos { x: 90, y: 17 } Pos { x: 664, y: 1551 } Dim { w: 9, h: 9 }
+k
+[ INFO]:  src/gfx2.rs@579: Pos { x: 100, y: 12 } Pos { x: 742, y: 1551 } Dim { w: 9, h: 9 }
+e
+[ INFO]:  src/gfx2.rs@579: Pos { x: 108, y: 17 } Pos { x: 701, y: 1551 } Dim { w: 9, h: 9 }
+s
+[ INFO]:  src/gfx2.rs@579: Pos { x: 117, y: 17 } Pos { x: 817, y: 1551 } Dim { w: 7, h: 7 }
+p
+[ INFO]:  src/gfx2.rs@579: Pos { x: 125, y: 17 } Pos { x: 791, y: 1551 } Dim { w: 10, h: 10 }
+e
+[ INFO]:  src/gfx2.rs@579: Pos { x: 134, y: 17 } Pos { x: 701, y: 1551 } Dim { w: 9, h: 9 }
+a
+[ INFO]:  src/gfx2.rs@579: Pos { x: 143, y: 17 } Pos { x: 664, y: 1551 } Dim { w: 9, h: 9 }
+r
+[ INFO]:  src/gfx2.rs@579: Pos { x: 153, y: 17 } Pos { x: 811, y: 1551 } Dim { w: 6, h: 6 }
+e
+[ INFO]:  src/gfx2.rs@579: Pos { x: 158, y: 17 } Pos { x: 701, y: 1551 } Dim { w: 9, h: 9 }
+ 
+[ INFO]:  src/gfx2.rs@579: Pos { x: 167, y: 26 } Pos { x: 1153, y: 1551 } Dim { w: 4, h: 4 }
+(
+[ INFO]:  src/gfx2.rs@579: Pos { x: 172, y: 13 } Pos { x: 1216, y: 1551 } Dim { w: 5, h: 5 }
+b
+[ INFO]:  src/gfx2.rs@579: Pos { x: 177, y: 13 } Pos { x: 673, y: 1551 } Dim { w: 10, h: 10 }
+a
+[ INFO]:  src/gfx2.rs@579: Pos { x: 186, y: 17 } Pos { x: 664, y: 1551 } Dim { w: 9, h: 9 }
+p
+[ INFO]:  src/gfx2.rs@579: Pos { x: 196, y: 17 } Pos { x: 791, y: 1551 } Dim { w: 10, h: 10 }
+t
+[ INFO]:  src/gfx2.rs@579: Pos { x: 205, y: 14 } Pos { x: 824, y: 1551 } Dim { w: 6, h: 6 }
+.
+[ INFO]:  src/gfx2.rs@579: Pos { x: 212, y: 23 } Pos { x: 1259, y: 1551 } Dim { w: 4, h: 4 }
+T
+[ INFO]:  src/gfx2.rs@579: Pos { x: 215, y: 14 } Pos { x: 1080, y: 1551 } Dim { w: 10, h: 10 }
+o
+[ INFO]:  src/gfx2.rs@579: Pos { x: 225, y: 17 } Pos { x: 781, y: 1551 } Dim { w: 10, h: 10 }
+o
+[ INFO]:  src/gfx2.rs@579: Pos { x: 235, y: 17 } Pos { x: 781, y: 1551 } Dim { w: 10, h: 10 }
+l
+[ INFO]:  src/gfx2.rs@579: Pos { x: 246, y: 13 } Pos { x: 751, y: 1551 } Dim { w: 5, h: 5 }
+t
+[ INFO]:  src/gfx2.rs@579: Pos { x: 250, y: 14 } Pos { x: 824, y: 1551 } Dim { w: 6, h: 6 }
+i
+[ INFO]:  src/gfx2.rs@579: Pos { x: 257, y: 13 } Pos { x: 734, y: 1551 } Dim { w: 4, h: 4 }
+p
+[ INFO]:  src/gfx2.rs@579: Pos { x: 261, y: 17 } Pos { x: 791, y: 1551 } Dim { w: 10, h: 10 }
+ 
+[ INFO]:  src/gfx2.rs@579: Pos { x: 270, y: 26 } Pos { x: 1153, y: 1551 } Dim { w: 4, h: 4 }
+b
+[ INFO]:  src/gfx2.rs@579: Pos { x: 275, y: 13 } Pos { x: 673, y: 1551 } Dim { w: 10, h: 10 }
+a
+[ INFO]:  src/gfx2.rs@579: Pos { x: 284, y: 17 } Pos { x: 664, y: 1551 } Dim { w: 9, h: 9 }
+p
+[ INFO]:  src/gfx2.rs@579: Pos { x: 294, y: 17 } Pos { x: 791, y: 1551 } Dim { w: 10, h: 10 }
+t
+[ INFO]:  src/gfx2.rs@579: Pos { x: 303, y: 14 } Pos { x: 824, y: 1551 } Dim { w: 6, h: 6 }
+i
+[ INFO]:  src/gfx2.rs@579: Pos { x: 310, y: 13 } Pos { x: 734, y: 1551 } Dim { w: 4, h: 4 }
+s
+[ INFO]:  src/gfx2.rs@579: Pos { x: 313, y: 17 } Pos { x: 817, y: 1551 } Dim { w: 7, h: 7 }
+e
+[ INFO]:  src/gfx2.rs@579: Pos { x: 320, y: 17 } Pos { x: 701, y: 1551 } Dim { w: 9, h: 9 }
+d
+[ INFO]:  src/gfx2.rs@579: Pos { x: 329, y: 13 } Pos { x: 691, y: 1551 } Dim { w: 10, h: 10 }
+ 
+[ INFO]:  src/gfx2.rs@579: Pos { x: 339, y: 26 } Pos { x: 1153, y: 1551 } Dim { w: 4, h: 4 }
+2
+[ INFO]:  src/gfx2.rs@579: Pos { x: 343, y: 14 } Pos { x: 592, y: 1551 } Dim { w: 9, h: 9 }
+6
+[ INFO]:  src/gfx2.rs@579: Pos { x: 352, y: 14 } Pos { x: 628, y: 1551 } Dim { w: 9, h: 9 }
+[
+[ INFO]:  src/gfx2.rs@579: Pos { x: 362, y: 13 } Pos { x: 1352, y: 1551 } Dim { w: 5, h: 5 }
+a
+[ INFO]:  src/gfx2.rs@579: Pos { x: 366, y: 17 } Pos { x: 664, y: 1551 } Dim { w: 9, h: 9 }
+]
+[ INFO]:  src/gfx2.rs@579: Pos { x: 375, y: 13 } Pos { x: 1357, y: 1551 } Dim { w: 5, h: 5 }
+ 
+[ INFO]:  src/gfx2.rs@579: Pos { x: 380, y: 26 } Pos { x: 1153, y: 1551 } Dim { w: 4, h: 4 }
+A
+[ INFO]:  src/gfx2.rs@579: Pos { x: 384, y: 14 } Pos { x: 885, y: 1551 } Dim { w: 10, h: 10 }
+p
+[ INFO]:  src/gfx2.rs@579: Pos { x: 395, y: 17 } Pos { x: 791, y: 1551 } Dim { w: 10, h: 10 }
+r
+[ INFO]:  src/gfx2.rs@579: Pos { x: 405, y: 17 } Pos { x: 811, y: 1551 } Dim { w: 6, h: 6 }
+i
+[ INFO]:  src/gfx2.rs@579: Pos { x: 411, y: 13 } Pos { x: 734, y: 1551 } Dim { w: 4, h: 4 }
+l
+[ INFO]:  src/gfx2.rs@579: Pos { x: 415, y: 13 } Pos { x: 751, y: 1551 } Dim { w: 5, h: 5 }
+ 
+[ INFO]:  src/gfx2.rs@579: Pos { x: 419, y: 26 } Pos { x: 1153, y: 1551 } Dim { w: 4, h: 4 }
+1
+[ INFO]:  src/gfx2.rs@579: Pos { x: 424, y: 14 } Pos { x: 583, y: 1551 } Dim { w: 9, h: 9 }
+5
+[ INFO]:  src/gfx2.rs@579: Pos { x: 432, y: 14 } Pos { x: 619, y: 1551 } Dim { w: 9, h: 9 }
+6
+[ INFO]:  src/gfx2.rs@579: Pos { x: 441, y: 14 } Pos { x: 628, y: 1551 } Dim { w: 9, h: 9 }
+4
+[ INFO]:  src/gfx2.rs@579: Pos { x: 450, y: 14 } Pos { x: 610, y: 1551 } Dim { w: 9, h: 9 }
+ 
+[ INFO]:  src/gfx2.rs@579: Pos { x: 459, y: 26 } Pos { x: 1153, y: 1551 } Dim { w: 4, h: 4 }

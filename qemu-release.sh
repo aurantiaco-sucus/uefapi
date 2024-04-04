@@ -9,4 +9,6 @@ qemu-system-x86_64 \
 -machine q35 \
 -drive if=pflash,format=raw,file=OVMF_CODE.fd \
 -drive if=pflash,format=raw,file=OVMF_VARS.fd \
--drive format=raw,file=fat:rw:esp
+-drive format=raw,file=fat:rw:esp \
+-chardev stdio,id=char0,logfile=qemu-release.log \
+-serial chardev:char0
