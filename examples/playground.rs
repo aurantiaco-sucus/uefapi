@@ -6,8 +6,7 @@ extern crate alloc;
 use uefi::prelude::*;
 use uefi::proto::media::disk::DiskIo;
 use uefi::table::boot::SearchType;
-use uefi_services::println;
-use uefapi::gfx2::{Color, GlyphCoordIteratorExt, GlyphIteratorExt};
+use uefapi::gfx2::{GlyphCoordIteratorExt, GlyphIteratorExt};
 use uefapi::prelude_dev::*;
 
 const FONT_DATA: &[u8] = include_bytes!("../../baked-font-generator/font.bin");
@@ -26,18 +25,12 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     let buffer = system_table.boot_services()
         .locate_handle_buffer(SearchType::from_proto::<DiskIo>()).unwrap();
     
-    gfx::Screen::get().clear(Color::RED);
-    gfx::Screen::present(gfx::Screen::rect());
+    gfx::Screen::get().clear(gfx::Color::BLACK);
     
     font.lookup_string(SOME_LONG_TEXT)
-        .zip(SOME_LONG_TEXT.chars())
-        .map(|(x, c)| {
-            println!("{c}");
-            x
-        })
         .glyph_coords()
         .line_wrap(780, 18)
-        .draw_each(gfx::Screen::get(), gfx::pos(10, 10), &font, gfx::Color::WHITE);
+        .draw_each(gfx::Screen::get(), gfx::pos(10, 10), &font, gfx::Color::GREEN);
     
     gfx::Screen::present(gfx::Screen::rect());
 

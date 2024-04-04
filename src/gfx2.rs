@@ -6,6 +6,7 @@ use core::slice;
 use baked_font::{Font, Glyph};
 use log::info;
 use uefi::proto::console::gop::{BltOp, BltPixel, BltRegion, GraphicsOutput, Mode};
+use uefi_services::system_table;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default)]
 pub struct Pos {
@@ -294,7 +295,7 @@ impl Color {
 
 #[inline]
 fn premultiplied_over_ch(bg: u8, fg: u8, fg_alpha: u8) -> u8 {
-    ((fg as u32 + bg as u32 * (255 - fg_alpha as u32)) / 255) as u8
+    ((fg as u32 * 255 + bg as u32 * (255 - fg_alpha as u32)) / 255) as u8
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
@@ -478,7 +479,7 @@ impl<T: Iterator<Item=Glyph>> Iterator for StraightGlyphCoordIterator<T> {
     fn next(&mut self) -> Option<Self::Item> {
         let glyph = self.iter.next()?;
         let fg_pos = pos(glyph.pos.0 as i32, glyph.pos.1 as i32);
-        let fg_dim = dim(glyph.size.0 as i32, glyph.size.0 as i32);
+        let fg_dim = dim(glyph.size.0 as i32, glyph.size.1 as i32);
         let g_off = pos(glyph.offset.0 as i32, glyph.offset.1 as i32);
         let c_off = self.off + g_off;
         self.off.x += fg_dim.w;
@@ -507,6 +508,7 @@ impl<T: Iterator<Item=Glyph>> Iterator for LineWrapGlyphCoordIterator<T> {
             self.iter.off.x = fg_dim.w;
             self.iter.off.y += self.height;
             c_off.x = 0;
+            c_off.y += self.height;
         }
         Some((fg_pos, c_off, fg_dim))
     }
@@ -576,7 +578,6 @@ impl<T: Iterator<Item=(Pos, Pos, Dim)>> GlyphCoordIteratorExt for T {
     fn draw_each(&mut self, buffer: &mut Buffer, loc: Pos, font: &Font, color: Color) {
         for (fg_pos, c_off, fg_dim) in self {
             let c_off = c_off + loc;
-            info!("{:?} {:?} {:?}", c_off, fg_pos, fg_dim);
             buffer.draw_font_rect(c_off, font, fg_pos, fg_dim, color);
         }
     }

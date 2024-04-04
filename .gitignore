@@ -1,6 +1,5 @@
 /target
 /.idea
 *.fd
-examples/some_long_text.txt
 Cargo.lock
 esp/EFI/BOOT/BOOTX64.EFI
