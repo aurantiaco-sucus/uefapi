@@ -27,11 +27,6 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     
     gfx::Screen::get().clear(gfx::Color::BLACK);
     
-    font.lookup_string(SOME_LONG_TEXT)
-        .glyph_coords()
-        .line_wrap(780, 18)
-        .draw_each(gfx::Screen::get(), gfx::pos(10, 10), &font, gfx::Color::WHITE);
-    
     gfx::Screen::present(gfx::Screen::rect());
 
     system_table.boot_services().stall(30_000_000);

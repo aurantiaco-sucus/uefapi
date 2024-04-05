@@ -239,6 +239,10 @@ pub const fn rgb(r: u8, g: u8, b: u8) -> Color {
     rgba(r, g, b, 255)
 }
 
+pub const fn gray(g: u8) -> Color {
+    rgb(g, g, g)
+}
+
 impl Color {
     pub const fn black_alpha(a: u8) -> Self {
         rgba(0, 0, 0, a)
@@ -637,6 +641,77 @@ impl<T: Iterator<Item=GlyphCoordResult>> GlyphCoordIteratorExt for T {
                     info!("Unhandled character: {:?}", ch);
                 }
             }
+        }
+    }
+}
+
+pub struct ProgressBar {
+    pub area: Area,
+    pub progress: f32,
+    pub fg: Color,
+    pub bg: Color,
+}
+
+impl ProgressBar {
+    pub fn draw_normal(&self, buffer: &mut Buffer) {
+        let fg = self.fg;
+        let bg = self.bg;
+        let actual = self.area.intersection(buffer.area());
+        let actual = if let Some(x) = actual { x } else { return; };
+        let progress = self.progress;
+        let progress_x = (
+            self.area.pos1.x as f32 + (self.area.pos2.x - self.area.pos1.x) as f32 * progress
+        ) as i32;
+        actual.pos_iter().for_each(|pos| {
+            let color = if pos.x < progress_x { fg } else { bg };
+            let tc = &mut buffer.data[
+                pos.x as usize + pos.y as usize * buffer.dim.w as usize];
+            *tc = tc.premultiplied_over(color);
+        });
+    }
+    
+    pub fn draw_marquee_custom(&self, buffer: &mut Buffer, frac_fns: &[fn(f32) -> f32]) {
+        let fg = self.fg;
+        let bg = self.bg;
+        let actual = self.area.intersection(buffer.area());
+        let actual = if let Some(x) = actual { x } else { return; };
+        let width = (self.area.pos2.x - self.area.pos1.x) as f32;
+        let progress = self.progress;
+        actual.pos_iter().for_each(|pos| {
+            let frac = (pos.x - self.area.pos1.x) as f32 / width + progress;
+            let mut frac = if frac >= 1.0 { frac - 1.0 } else { frac };
+            for frac_fn in frac_fns {
+                frac = frac_fn(frac);
+            }
+            let alpha = (frac * 255.0) as u8;
+            let color = fg.apply_alpha(alpha);
+            let color = bg.premultiplied_over(color);
+            let tc = &mut buffer.data[
+                pos.x as usize + pos.y as usize * buffer.dim.w as usize];
+            *tc = tc.premultiplied_over(color);
+        });
+    }
+    
+    pub fn draw_marquee(&self, buffer: &mut Buffer) {
+        self.draw_marquee_custom(buffer, &[Math::wrapping_linear, Math::exp_2_slope_s]);
+    }
+}
+
+pub struct Math {}
+
+impl Math {
+    pub fn wrapping_linear(frac: f32) -> f32 {
+        let frac = frac * 2.0;
+        if frac >= 1.0 { 2.0 - frac } else { frac }
+    }
+
+    pub fn exp_2_slope_s(frac: f32) -> f32 {
+        if frac < 0.5 {
+            let frac = frac * 2.0;
+            (frac * frac) / 2.0
+        } else {
+            let frac = (1.0 - frac) * 2.0;
+            (1.0 - (frac * frac)) / 2.0 + 0.5
         }
     }
 }

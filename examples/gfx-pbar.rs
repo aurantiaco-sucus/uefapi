@@ -11,31 +11,36 @@ use uefapi::prelude::*;
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     uefi_services::init(&mut system_table).unwrap();
     system_table.boot_services().set_watchdog_timer(0, 0x10000, None).unwrap();
-    gfx::init_display_mode(gfx::display_modes().iter()
+    gfx::Screen::init_mode(gfx::Screen::modes().iter()
         .filter(|x| x.info().resolution() == (800, 600))
         .next().unwrap());
 
-    let mut screen = gfx::Buffer::new_screen();
-    let mut pbar = gfx::ProgressBar {
-        x: 100,
-        y: 100,
-        width: 200,
-        height: 8,
+    gfx::Screen::get().clear(gfx::Color::BLACK);
+
+    let mut pb = gfx::ProgressBar {
+        area: gfx::rect(gfx::pos(100, 100), gfx::dim(400, 20)).area(),
         progress: 0.0,
-        bg_color: gfx::Color::gray(0x33),
-        fg_color: gfx::Color::gray(0x99),
+        fg: gfx::gray(0xD0),
+        bg: gfx::gray(0x60),
     };
-    for i in 0..=100 {
-        pbar.progress = i as f32 / 100.0;
-        pbar.render(&mut screen);
-        pbar.present(&screen);
+
+    for _ in 0..50 {
+        pb.draw_normal(gfx::Screen::get());
+        pb.progress += 0.02;
+        gfx::Screen::present(pb.area.rect());
+        system_table.boot_services().stall(100_000);
+    }
+    for _ in 0..2000 {
+        pb.draw_marquee(gfx::Screen::get());
+        pb.progress += 0.02;
+        if pb.progress > 1.0 {
+            pb.progress -= 1.0;
+        }
+        gfx::Screen::present(pb.area.rect());
         system_table.boot_services().stall(50_000);
     }
-    for _ in 0..=100 {
-        pbar.render_spinner(&mut screen);
-        pbar.present(&screen);
-        system_table.boot_services().stall(50_000);
-    }
+
+    gfx::Screen::present(gfx::Screen::rect());
 
     system_table.boot_services().stall(30_000_000);
     Status::SUCCESS
